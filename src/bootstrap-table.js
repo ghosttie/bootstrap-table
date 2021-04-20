@@ -1,6 +1,6 @@
 /**
  * @author zhixin wen <wenzhixin2010@gmail.com>
- * version: 1.18.2
+ * version: 1.18.3
  * https://github.com/wenzhixin/bootstrap-table/
  */
 
@@ -96,7 +96,7 @@ class BootstrapTable {
       ${loadingTemplate}
       </div>
       </div>
-      <div class="fixed-table-footer"><table><thead><tr></tr></thead></table></div>
+      <div class="fixed-table-footer"></div>
       </div>
       ${bottomPagination}
       </div>
@@ -1180,10 +1180,10 @@ class BootstrapTable {
     }
 
     if (this.paginationParts.includes('pageSize')) {
-      html.push('<span class="page-list">')
+      html.push('<div class="page-list">')
 
       const pageNumber = [
-        `<span class="${this.constants.classes.paginationDropdown}">
+        `<div class="${this.constants.classes.paginationDropdown}">
         <button class="${this.constants.buttonsClass} dropdown-toggle" type="button" ${this.constants.dataToggle}="dropdown">
         <span class="page-size">
         ${allSelected ? opts.formatAllRows() : opts.pageSize}
@@ -1205,13 +1205,13 @@ class BootstrapTable {
           pageNumber.push(Utils.sprintf(this.constants.html.pageDropdownItem, active, page))
         }
       })
-      pageNumber.push(`${this.constants.html.pageDropdown[1]}</span>`)
+      pageNumber.push(`${this.constants.html.pageDropdown[1]}</div>`)
 
       html.push(opts.formatRecordsPerPage(pageNumber.join('')))
     }
 
     if (this.paginationParts.includes('pageInfo') || this.paginationParts.includes('pageInfoShort') || this.paginationParts.includes('pageSize')) {
-      html.push('</span></div>')
+      html.push('</div></div>')
     }
 
     if (this.paginationParts.includes('pageList')) {
@@ -1308,7 +1308,7 @@ class BootstrapTable {
     const dropupClass = ['bottom', 'both'].includes(opts.paginationVAlign) ?
       ` ${this.constants.classes.dropup}` : ''
 
-    this.$pagination.last().find('.page-list > span').addClass(dropupClass)
+    this.$pagination.last().find('.page-list > div').addClass(dropupClass)
 
     if (!opts.onlyInfoPagination) {
       $pageList = this.$pagination.find('.page-list a')
@@ -1943,6 +1943,7 @@ class BootstrapTable {
 
         if (
           this.options.sidePagination === 'server' &&
+          this.options.pageNumber > 1 &&
           res[this.options.totalField] > 0 &&
           !res[this.options.dataField].length
         ) {
@@ -2220,6 +2221,10 @@ class BootstrapTable {
     if (!this.options.height && !this.$tableFooter.length) {
       this.$el.append('<tfoot><tr></tr></tfoot>')
       this.$tableFooter = this.$el.find('tfoot')
+    }
+
+    if (!this.$tableFooter.find('tr').length) {
+      this.$tableFooter.html('<table><thead><tr></tr></thead></table>')
     }
 
     this.$tableFooter.find('tr').html(html.join(''))
@@ -2902,10 +2907,11 @@ class BootstrapTable {
       if (obj.values.includes(row[obj.field])) {
         let $el = this.$selectItem.filter(':enabled')
           .filter(Utils.sprintf('[data-index="%s"]', i))
+        const onlyCurrentPage = obj.hasOwnProperty('onlyCurrentPage') ? obj.onlyCurrentPage : false
 
         $el = checked ? $el.not(':checked') : $el.filter(':checked')
 
-        if (!$el.length) {
+        if (!$el.length && onlyCurrentPage) {
           return
         }
 
